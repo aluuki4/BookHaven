@@ -1,17 +1,8 @@
-<!--
-    Для публікації сайту на GitHub Pages:
-    1. Створіть репозиторій на github.com та завантажте всі файли проєкту.
-    2. У налаштуваннях репозиторію увімкніть GitHub Pages (гілка main/master, папка root).
-    3. Якщо використовуєте відносні шляхи, переконайтеся, що <base href="./"> додано в <head>.
-    4. Сайт буде доступний за адресою: https://ваш-логін.github.io/ім'я-репозиторія/
-    5. Для коректної роботи відносних шляхів та зображень використовуйте відносні шляхи або CDN.
--->
-
 <!DOCTYPE html>
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="Книжковий магазин 'BookHeaven' пропонує широкий вибір книг за доступними цінами. Доставка по Україні.">
     <meta name="keywords" content="книги, література, онлайн-магазин, доставка, акції, жанри">
     <meta name="author" content="BookHeaven">
@@ -631,63 +622,35 @@
                 margin-bottom: 2rem;
             }
         }
-        <style>
-  /* Improve responsiveness for all elements */
-  @media (max-width: 768px) {
-    header .container {
-      flex-wrap: wrap;
-    }
 
-    .book-card {
-      max-width: 100% !important;
-      padding: 1rem;
-    }
+        html, body {
+            /* ...existing code... */
+        }
 
-    .swiper-slide {
-      width: 90% !important;
-    }
-
-    .genre-buttons {
-      flex-direction: column;
-      align-items: stretch;
-    }
-  }
-
-  @media (max-width: 480px) {
-    h1 {
-      font-size: 1.75rem !important;
-    }
-
-    h2 {
-      font-size: 1.5rem !important;
-    }
-
-    .search-bar,
-    .auth-form input {
-      font-size: 0.875rem;
-      padding: 0.5rem 0.75rem;
-    }
-
-    .auth-submit,
-    .btn {
-      padding: 0.5rem 1rem;
-      font-size: 0.875rem;
-    }
-
-    #genre-grid {
-      grid-template-columns: 1fr !important;
-    }
-
-    .hero-section {
-      min-height: 300px !important;
-    }
-
-    .modal-content {
-      margin: 1rem;
-    }
-  }
-</style>
-
+        /* --- MOBILE FIX: Prevent scrolling and fix to viewport --- */
+        @media (max-width: 640px) {
+            html, body {
+                position: fixed;
+                width: 100vw;
+                height: 100vh;
+                max-width: 100vw;
+                max-height: 100vh;
+                overflow: hidden !important;
+                overscroll-behavior: none;
+                touch-action: manipulation;
+                -webkit-overflow-scrolling: auto;
+            }
+            body {
+                overscroll-behavior-y: none;
+                background-attachment: fixed;
+            }
+            #app, .container, .auth-overlay, .modal, .mobile-menu, .auth-container {
+                max-width: 100vw !important;
+                max-height: 100vh !important;
+                overflow: auto;
+            }
+        }
+        /* --- END MOBILE FIX --- */
     </style>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -869,21 +832,49 @@
                 e.preventDefault();
                 const email = e.target.email.value;
                 const password = e.target.password.value;
+                const remember = e.target.remember.checked;
 
                 try {
+                    const persistence = remember
+                        ? firebase.auth.Auth.Persistence.LOCAL
+                        : firebase.auth.Auth.Persistence.SESSION;
+                    await auth.setPersistence(persistence);
                     await auth.signInWithEmailAndPassword(email, password);
-                    e.target.reset();
-                    if (elements.authButton) elements.authButton.classList.add('hidden'); // hide auth button
+
+                    // ...existing code for successful login...
+                    const userWelcome = document.getElementById('user-welcome');
+                    const headerEmail = document.getElementById('header-email');
+                    const authButtons = document.getElementById('auth-buttons');
+                    const userDropdown = document.getElementById('user-dropdown');
+
+                    if (headerEmail) {
+                        headerEmail.textContent = email;
+                    }
+                    if (userWelcome) {
+                        userWelcome.classList.remove('hidden');
+                        userWelcome.style.display = 'flex';
+                    }
+                    if (authButtons) {
+                        authButtons.classList.add('hidden');
+                    }
+                    if (userDropdown) userDropdown.classList.remove('hidden');
+
+                    toggleAuthOverlay(false);
+                    if (authUI.authButton) authUI.authButton.classList.add('hidden'); // hide auth button
                 } catch (error) {
+                    // Improved error notification for all Firebase errors
                     const errorMessages = {
-                        'auth/user-not-found': 'Користувача не знайдено',
-                        'auth/wrong-password': 'Невірний пароль',
-                        'auth/invalid-email': 'Невірний формат email'
+                        'auth/user-not-found': "Невірний email або пароль. Спробуйте ще раз.",
+                        'auth/wrong-password': "Невірний email або пароль. Спробуйте ще раз.",
+                        'auth/invalid-email': "Введіть коректний email.",
+                        'auth/too-many-requests': "Забагато невдалих спроб. Спробуйте пізніше.",
+                        'auth/network-request-failed': "Проблема з мережею. Перевірте підключення до інтернету.",
+                        'auth/invalid-login-credentials': "Невірний email або пароль. Спробуйте ще раз."
                     };
-                    toastSystem.error(
-                        'Помилка входу',
-                        errorMessages[error.code] || error.message
-                    );
+                    const message = errorMessages[error.code] || "Невірний email або пароль. Спробуйте ще раз.";
+                    toastSystem.error('Помилка входу', message);
+                    // Optionally log for debugging:
+                    // console.error('Login error:', error);
                 }
             });
 
@@ -1185,20 +1176,20 @@
                 const remember = e.target.remember.checked;
 
                 try {
-                    const persistence = remember 
-                        ? firebase.auth.Auth.Persistence.LOCAL 
+                    const persistence = remember
+                        ? firebase.auth.Auth.Persistence.LOCAL
                         : firebase.auth.Auth.Persistence.SESSION;
                     await auth.setPersistence(persistence);
-                    const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                    
-                    
+                    await auth.signInWithEmailAndPassword(email, password);
+
+                    // ...existing code for successful login...
                     const userWelcome = document.getElementById('user-welcome');
                     const headerEmail = document.getElementById('header-email');
                     const authButtons = document.getElementById('auth-buttons');
                     const userDropdown = document.getElementById('user-dropdown');
 
                     if (headerEmail) {
-                        headerEmail.textContent = userCredential.user.email;
+                        headerEmail.textContent = email;
                     }
                     if (userWelcome) {
                         userWelcome.classList.remove('hidden');
@@ -1212,14 +1203,24 @@
                     toggleAuthOverlay(false);
                     if (authUI.authButton) authUI.authButton.classList.add('hidden'); // hide auth button
                 } catch (error) {
-                    console.error('Login error:', error);
-                    toastSystem.error('Помилка входу', error.message);
+                    // Improved error notification for all Firebase errors
+                    const errorMessages = {
+                        'auth/user-not-found': "Невірний email або пароль. Спробуйте ще раз.",
+                        'auth/wrong-password': "Невірний email або пароль. Спробуйте ще раз.",
+                        'auth/invalid-email': "Введіть коректний email.",
+                        'auth/too-many-requests': "Забагато невдалих спроб. Спробуйте пізніше.",
+                        'auth/network-request-failed': "Проблема з мережею. Перевірте підключення до інтернету.",
+                        'auth/invalid-login-credentials': "Невірний email або пароль. Спробуйте ще раз."
+                    };
+                    const message = errorMessages[error.code] || "Невірний email або пароль. Спробуйте ще раз.";
+                    toastSystem.error('Помилка входу', message);
+                    // Optionally log for debugging:
+                    // console.error('Login error:', error);
                 }
             });
 
             authUI.registerForm?.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                
                 const name = document.getElementById('register-name').value;
                 const email = document.getElementById('register-email').value;
                 const password = document.getElementById('register-password').value;
@@ -1597,29 +1598,6 @@
         </div>
     </section>
 
-    <section class="py-16 bg-white" data-aos="fade-up">
-        <div class="container mx-auto px-4">
-            <h2 class="text-[var(--text)] mb-12 text-center">Відгуки наших клієнтів</h2>
-            <div class="swiper-container">
-                <div class="swiper-wrapper">
-                    <div class="swiper-slide">
-                        <div class="bg-gray-100 p-6 rounded-md text-center" data-aos="fade-up">
-                            <p class="text-gray-600 mb-4">"Чудовий вибір книг і швидка доставка! Завжди знаходжу щось нове для себе."</p>
-                            <p class="font-semibold text-[var(--text)]">Олена, Київ</p>
-                        </div>
-                    </div>
-                                       <div class="swiper-slide">
-                        <div class="bg-gray-100 p-6 rounded-md text-center" data-aos="fade-up" data-aos-delay="100">
-                            <p class="text-gray-600 mb-4">"Дуже зручний сайт, а знижки радують. Рекомендую всім книголюбам!"</p>
-                            <p class="font-semibold text-[var(--text)]">Ігор, Львів</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="swiper-pagination"></div>
-            </div>
-        </div>
-    </section>
-
     <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-40 modal" role="dialog" aria-labelledby="cart-modal-title">
         <div class="bg-white rounded-2xl shadow-2xl p-0 w-full max-w-lg modal-content relative overflow-hidden">
             <div class="flex items-center justify-between px-8 py-6 border-b border-gray-100 bg-gradient-to-r from-yellow-50 to-white">
@@ -1646,7 +1624,7 @@
                 <div class="flex flex-col md:flex-row gap-3">
                     <button id="clear-cart" class="flex-1 btn bg-gray-100 text-[var(--primary)] border border-gray-200 hover:bg-gray-200 transition">Очистити</button>
                     <button id="order-btn" class="flex-1 btn bg-[var(--primary)] hover:bg-[var(--secondary)] text-white transition">Оформити замовлення</button>
-                </div>
+               </div>
             </div>
         </div>
     </div>
@@ -1712,15 +1690,21 @@
                 <div class="text-center">
                     <h3 class="text-xl font-semibold mb-4">Контакти</h3>
                     <p class="text-sm mb-2">Електронна пошта: rfomichenko1@gmail.com</p>
-                    <p class="text-sm mb-2">Телефон: +38 (044) 123-45-67</p>
+                    <p class="text-sm mb-2">Телефон:+38994453335</p>
                     <p class="text-sm">Адреса: вул. Книжкова, 10, Київ, Україна</p>
                 </div>
                 <div class="text-center">
                     <h3 class="text-xl font-semibold mb-4">Допомога</h3>
                     <ul class="text-sm space-y-2">
-                        <li><a href="/shipping" class="hover:text-[var(--primary)] transition-colors duration-200">Доставка та оплата</a></li>
-                        <li><a href="/faq" class="hover:text-[var(--primary)] transition-colors duration-200">Часті запитання</a></li>
-                        <li><a href="/returns" class="hover:text-[var(--primary)] transition-colors duration-200">Повернення</a></li>
+                        <li>
+                            <a href="#" data-modal="shipping" class="hover:text-[var(--primary)] transition-colors duration-200">Доставка та оплата</a>
+                        </li>
+                        <li>
+                            <a href="#" data-modal="faq" class="hover:text-[var(--primary)] transition-colors duration-200">Часті запитання</a>
+                        </li>
+                        <li>
+                            <a href="#" data-modal="returns" class="hover:text-[var(--primary)] transition-colors duration-200">Повернення</a>
+                        </li>
                     </ul>
                 </div>
                 <div class="text-center">
@@ -1866,13 +1850,35 @@
                     content: `
                         <p>Ми завжди раді допомогти вам! Звертайтесь до нас за будь-якими питаннями:</p>
                                                <ul class="list-disc pl-5">
-                            <li><strong>Електронна пошта:</strong> <a href="mailto:support@litera.com" class="text-[var(--primary)] hover:underline">support@litera.com</a></li>
-                            <li><strong>Телефон:</strong> +38 (044) 123-45-67</li>
+                            <li><strong>Електронна пошта:</strong> <a href="mailto:rmykhailovsky@ifkep.ukr.education" class="text-[var(--primary)] hover:underline">rmykhailovsky@ifkep.ukr.education</a></li>
+                            <li><strong>Телефон:</strong>+38994453335</li>
                             <li><strong>Адреса:</strong> вул. Книжкова, 10, Київ, Україна</li>
                             <li><strong>Графік роботи:</strong> Пн-Пт: 9:00-18:00, Сб: 10:00-16:00, Нд: вихідний</li>
                         </ul>
-                        <p>Слідкуйте за нами в соціальних мережах, щоб бути в курсі новинок та акцій!</p>
+                        <p></p>
                     `
+                },
+                faq: {
+                    title: "Часті запитання",
+                    content: `
+                        <ul class="list-disc pl-5 space-y-2">
+                            <li><strong>Як зробити замовлення?</strong><br>Оберіть книги, додайте їх у кошик та натисніть "Оформити замовлення". Заповніть форму та підтвердіть замовлення.</li>
+                            <li><strong>Які способи оплати доступні?</strong><br>Онлайн-оплата карткою, LiqPay, післяплата при отриманні.</li>
+                            <li><strong>Як відстежити замовлення?</strong><br>Після відправки ви отримаєте SMS з номером накладної для відстеження на сайті перевізника.</li>
+                            <li><strong>Чи можна повернути книгу?</strong><br>Так, протягом 14 днів за умови збереження товарного вигляду. Деталі у розділі "Повернення".</li>
+                        </ul>
+                    `
+                },
+                returns: {
+                    title: "Повернення",
+                    content: `
+                    <p>Ви можете повернути товар протягом 14 днів з моменту отримання, якщо:</p>
+                    <ul class="list-disc pl-5 mb-2">
+                        <li>Книга не була у використанні та збережено товарний вигляд</li>
+                        <li>Є документ, що підтверджує покупку (чек, накладна)</li>
+                    </ul>
+                    <p>Для оформлення повернення зверніться до нашої служби підтримки за email або телефоном. Вартість доставки при поверненні сплачує покупець, якщо повернення не пов'язане з браком.</p>
+                `
                 }
             };
 
@@ -2352,9 +2358,7 @@
       }
     </script>
     <script>
-      // Плавний скролл к секції жанров для всіх ссылок на #genres
       document.addEventListener('DOMContentLoaded', () => {
-        // Smooth scroll for all links to #genres
         document.querySelectorAll('a[href="#genres"]').forEach(link => {
           link.addEventListener('click', function(e) {
             e.preventDefault();
@@ -2362,7 +2366,6 @@
             if (target) {
               target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
-            // Закрити мобільне меню, якщо воно відкрито
             const mobileMenu = document.getElementById('mobile-menu');
             if (mobileMenu && mobileMenu.classList.contains('open')) {
               mobileMenu.classList.remove('open');
@@ -2370,6 +2373,34 @@
             }
           });
         });
+
+        // Плавний скролл к секції "Акційні книги" при клике на "Акції"
+        document.querySelectorAll('a[href="#discounts"]').forEach(link => {
+          link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.getElementById('discounts');
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu && mobileMenu.classList.contains('open')) {
+              mobileMenu.classList.remove('open');
+              setTimeout(() => mobileMenu.classList.add('hidden'), 300);
+            }
+          });
+        });
+
+        // Плавний скролл к шапке профиля при клике на логотип
+        const logoLink = document.getElementById('logo-link');
+        if (logoLink) {
+          logoLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const header = document.querySelector('header');
+            if (header) {
+              header.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          });
+        }
       });
     </script>
 </body>
