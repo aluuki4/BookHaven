@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Книжковий магазин 'BookHeaven' пропонує широкий вибір книг за доступними цінами. Доставка по Україні.">
     <meta name="keywords" content="книги, література, онлайн-магазин, доставка, акції, жанри">
     <meta name="author" content="BookHeaven">
@@ -622,35 +622,6 @@
                 margin-bottom: 2rem;
             }
         }
-
-        html, body {
-            /* ...existing code... */
-        }
-
-        /* --- MOBILE FIX: Prevent scrolling and fix to viewport --- */
-        @media (max-width: 640px) {
-            html, body {
-                position: fixed;
-                width: 100vw;
-                height: 100vh;
-                max-width: 100vw;
-                max-height: 100vh;
-                overflow: hidden !important;
-                overscroll-behavior: none;
-                touch-action: manipulation;
-                -webkit-overflow-scrolling: auto;
-            }
-            body {
-                overscroll-behavior-y: none;
-                background-attachment: fixed;
-            }
-            #app, .container, .auth-overlay, .modal, .mobile-menu, .auth-container {
-                max-width: 100vw !important;
-                max-height: 100vh !important;
-                overflow: auto;
-            }
-        }
-        /* --- END MOBILE FIX --- */
     </style>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -1598,6 +1569,29 @@
         </div>
     </section>
 
+    <section class="py-16 bg-white" data-aos="fade-up">
+        <div class="container mx-auto px-4">
+            <h2 class="text-[var(--text)] mb-12 text-center">Відгуки наших клієнтів</h2>
+            <div class="swiper-container">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide">
+                        <div class="bg-gray-100 p-6 rounded-md text-center" data-aos="fade-up">
+                            <p class="text-gray-600 mb-4">"Чудовий вибір книг і швидка доставка! Завжди знаходжу щось нове для себе."</p>
+                            <p class="font-semibold text-[var(--text)]">Олена, Київ</p>
+                        </div>
+                    </div>
+                                       <div class="swiper-slide">
+                        <div class="bg-gray-100 p-6 rounded-md text-center" data-aos="fade-up" data-aos-delay="100">
+                            <p class="text-gray-600 mb-4">"Дуже зручний сайт, а знижки радують. Рекомендую всім книголюбам!"</p>
+                            <p class="font-semibold text-[var(--text)]">Ігор, Львів</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+        </div>
+    </section>
+
     <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-40 modal" role="dialog" aria-labelledby="cart-modal-title">
         <div class="bg-white rounded-2xl shadow-2xl p-0 w-full max-w-lg modal-content relative overflow-hidden">
             <div class="flex items-center justify-between px-8 py-6 border-b border-gray-100 bg-gradient-to-r from-yellow-50 to-white">
@@ -1624,7 +1618,7 @@
                 <div class="flex flex-col md:flex-row gap-3">
                     <button id="clear-cart" class="flex-1 btn bg-gray-100 text-[var(--primary)] border border-gray-200 hover:bg-gray-200 transition">Очистити</button>
                     <button id="order-btn" class="flex-1 btn bg-[var(--primary)] hover:bg-[var(--secondary)] text-white transition">Оформити замовлення</button>
-               </div>
+                               </div>
             </div>
         </div>
     </div>
@@ -1690,21 +1684,15 @@
                 <div class="text-center">
                     <h3 class="text-xl font-semibold mb-4">Контакти</h3>
                     <p class="text-sm mb-2">Електронна пошта: rfomichenko1@gmail.com</p>
-                    <p class="text-sm mb-2">Телефон:+38994453335</p>
+                    <p class="text-sm mb-2">Телефон: +38 (044) 123-45-67</p>
                     <p class="text-sm">Адреса: вул. Книжкова, 10, Київ, Україна</p>
                 </div>
                 <div class="text-center">
                     <h3 class="text-xl font-semibold mb-4">Допомога</h3>
                     <ul class="text-sm space-y-2">
-                        <li>
-                            <a href="#" data-modal="shipping" class="hover:text-[var(--primary)] transition-colors duration-200">Доставка та оплата</a>
-                        </li>
-                        <li>
-                            <a href="#" data-modal="faq" class="hover:text-[var(--primary)] transition-colors duration-200">Часті запитання</a>
-                        </li>
-                        <li>
-                            <a href="#" data-modal="returns" class="hover:text-[var(--primary)] transition-colors duration-200">Повернення</a>
-                        </li>
+                        <li><a href="/shipping" class="hover:text-[var(--primary)] transition-colors duration-200">Доставка та оплата</a></li>
+                        <li><a href="/faq" class="hover:text-[var(--primary)] transition-colors duration-200">Часті запитання</a></li>
+                        <li><a href="/returns" class="hover:text-[var(--primary)] transition-colors duration-200">Повернення</a></li>
                     </ul>
                 </div>
                 <div class="text-center">
@@ -1850,35 +1838,13 @@
                     content: `
                         <p>Ми завжди раді допомогти вам! Звертайтесь до нас за будь-якими питаннями:</p>
                                                <ul class="list-disc pl-5">
-                            <li><strong>Електронна пошта:</strong> <a href="mailto:rmykhailovsky@ifkep.ukr.education" class="text-[var(--primary)] hover:underline">rmykhailovsky@ifkep.ukr.education</a></li>
-                            <li><strong>Телефон:</strong>+38994453335</li>
+                            <li><strong>Електронна пошта:</strong> <a href="mailto:support@litera.com" class="text-[var(--primary)] hover:underline">support@litera.com</a></li>
+                            <li><strong>Телефон:</strong> +38 (044) 123-45-67</li>
                             <li><strong>Адреса:</strong> вул. Книжкова, 10, Київ, Україна</li>
                             <li><strong>Графік роботи:</strong> Пн-Пт: 9:00-18:00, Сб: 10:00-16:00, Нд: вихідний</li>
                         </ul>
-                        <p></p>
+                        <p>Слідкуйте за нами в соціальних мережах, щоб бути в курсі новинок та акцій!</p>
                     `
-                },
-                faq: {
-                    title: "Часті запитання",
-                    content: `
-                        <ul class="list-disc pl-5 space-y-2">
-                            <li><strong>Як зробити замовлення?</strong><br>Оберіть книги, додайте їх у кошик та натисніть "Оформити замовлення". Заповніть форму та підтвердіть замовлення.</li>
-                            <li><strong>Які способи оплати доступні?</strong><br>Онлайн-оплата карткою, LiqPay, післяплата при отриманні.</li>
-                            <li><strong>Як відстежити замовлення?</strong><br>Після відправки ви отримаєте SMS з номером накладної для відстеження на сайті перевізника.</li>
-                            <li><strong>Чи можна повернути книгу?</strong><br>Так, протягом 14 днів за умови збереження товарного вигляду. Деталі у розділі "Повернення".</li>
-                        </ul>
-                    `
-                },
-                returns: {
-                    title: "Повернення",
-                    content: `
-                    <p>Ви можете повернути товар протягом 14 днів з моменту отримання, якщо:</p>
-                    <ul class="list-disc pl-5 mb-2">
-                        <li>Книга не була у використанні та збережено товарний вигляд</li>
-                        <li>Є документ, що підтверджує покупку (чек, накладна)</li>
-                    </ul>
-                    <p>Для оформлення повернення зверніться до нашої служби підтримки за email або телефоном. Вартість доставки при поверненні сплачує покупець, якщо повернення не пов'язане з браком.</p>
-                `
                 }
             };
 
@@ -2373,34 +2339,6 @@
             }
           });
         });
-
-        // Плавний скролл к секції "Акційні книги" при клике на "Акції"
-        document.querySelectorAll('a[href="#discounts"]').forEach(link => {
-          link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const target = document.getElementById('discounts');
-            if (target) {
-              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-            const mobileMenu = document.getElementById('mobile-menu');
-            if (mobileMenu && mobileMenu.classList.contains('open')) {
-              mobileMenu.classList.remove('open');
-              setTimeout(() => mobileMenu.classList.add('hidden'), 300);
-            }
-          });
-        });
-
-        // Плавний скролл к шапке профиля при клике на логотип
-        const logoLink = document.getElementById('logo-link');
-        if (logoLink) {
-          logoLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            const header = document.querySelector('header');
-            if (header) {
-              header.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-          });
-        }
       });
     </script>
 </body>
